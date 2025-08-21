@@ -12,8 +12,8 @@ export default function Calculator(){
       setInput("");
     }else if(value === "=") {
       try{
-        const result = eval(input).toString();
-        setHistory([...history.slice(0, 10), `${input} = ${result}`]); //add to history
+        const result = evaluate(input).toString();
+        setHistory([...history.slice(-9), `${input} = ${result}`]); //add to history
         setInput(result);
       }catch{
         setInput("Error");
@@ -22,6 +22,12 @@ export default function Calculator(){
         setInput(input + value);
     }
   };
+
+  const sciButtons = [
+    ["sin(", "cos(", "tan(", "log("],
+    ["ln(", "√(", "^", "%"],
+    ["π", "e", "(", ")"],
+  ];
 
   const buttons = [
     ["C", "/", "*", "⌫"],
@@ -61,6 +67,24 @@ export default function Calculator(){
       {/* Display */}
       <View style={styles.displayContainer}>
         <Text style={styles.displayText}>{input || "0"}</Text>
+      </View>
+      {/* Scientific Buttons */}
+      <View style={styles.buttonsContainer}>
+        {sciButtons.map((row, i) => (
+          <View key={i} style={styles.row}>
+            {row.map((btn) => (
+              <TouchableOpacity
+                key={btn}
+                style={[styles.button, styles.sciButton]}
+                onPress={() =>
+                  btn === "√(" ? handlePress("sqrt(") : handlePress(btn)
+                }
+              >
+                <Text style={[styles.buttonText, styles.sciText]}>{btn}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        ))}
       </View>
 
       {/* Buttons */}
@@ -191,5 +215,14 @@ const styles = StyleSheet.create({
   specialText: {
     color: "#fff",
     fontWeight: "bold",
+  },
+
+  sciText: {
+    color: "#FFD700",
+    fontSize: 20,
+  },
+
+  sciButton: {
+    backgroundColor: "#555",
   },
 });
