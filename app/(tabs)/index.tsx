@@ -1,25 +1,33 @@
+import { Ionicons } from "@expo/vector-icons"; // expo install @expo/vector-icons
+import { evaluate } from "mathjs"; // npm install mathjs
 import { useState } from "react";
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
-export default function Calculator(){
+export default function Calculator() {
   const [input, setInput] = useState("");
   const [history, setHistory] = useState<string[]>([]);
   const [showHistory, setShowHistory] = useState(false);
-
+  const [showSci, setShowSci] = useState(false); // toggle normal/scientific
 
   const handlePress = (value: string) => {
-    if(value === "C") {
+    if (value === "C") {
       setInput("");
-    }else if(value === "=") {
-      try{
+    } else if (value === "=") {
+      try {
         const result = evaluate(input).toString();
-        setHistory([...history.slice(-9), `${input} = ${result}`]); //add to history
+        setHistory([...history.slice(-9), `${input} = ${result}`]);
         setInput(result);
-      }catch{
+      } catch {
         setInput("Error");
       }
     } else {
-        setInput(input + value);
+      setInput(input + value);
     }
   };
 
@@ -27,6 +35,11 @@ export default function Calculator(){
     ["sin(", "cos(", "tan(", "log("],
     ["ln(", "√(", "^", "%"],
     ["π", "e", "(", ")"],
+    ["C", "/", "*", "⌫"],
+    ["7", "8", "9", "-"],
+    ["4", "5", "6", "+"],
+    ["1", "2", "3", "="],
+    ["0", ".", "%"],
   ];
 
   const buttons = [
@@ -34,70 +47,72 @@ export default function Calculator(){
     ["7", "8", "9", "-"],
     ["4", "5", "6", "+"],
     ["1", "2", "3", "="],
-    ["0", ".", "%"]
+    ["0", ".", "%"],
   ];
 
   return (
     <View style={styles.container}>
-      {/* History Toggle Button */}
-      <TouchableOpacity
-        style={styles.historyButton}
-        onPress={() => setShowHistory(!showHistory)}
-      >
-        <Text style={styles.historyButtonText}>
-          {showHistory ? "Hide History" : "View History"}
-        </Text>
-      </TouchableOpacity>
+      {/* Top Controls */}
+      <View style={styles.topRow}>
+        {/* Toggle History */}
+        <TouchableOpacity
+          style={styles.historyButton}
+          onPress={() => setShowHistory(!showHistory)}
+        >
+          <Text style={styles.historyButtonText}>
+            {showHistory ? "Hide History" : "History"}
+          </Text>
+        </TouchableOpacity>
 
-      {/* History Section (only if toggled on) */}
+        {/* Toggle Normal/Scientific */}
+        <TouchableOpacity
+          style={styles.iconButton}
+          onPress={() => setShowSci(!showSci)}
+        >
+          <Ionicons
+            name={showSci ? "calculator" : "calculator-outline"}
+            size={28}
+            color="#FFD700"
+          />
+        </TouchableOpacity>
+      </View>
+
+      {/* History */}
       {showHistory && (
-        <ScrollView style={styles.historyContainer}>
-          {history.length === 0 ? (
-            <Text style={styles.historyText}>No history yet</Text>
-          ) : (
-            history.map((item, i) => (
-              <Text key={i} style={styles.historyText}>
-                {item}
-              </Text>
-            ))
-          )}
-        </ScrollView>
+        <View style={styles.historyBox}>
+          <ScrollView>
+            {history.length === 0 ? (
+              <Text style={styles.historyText}>No history yet</Text>
+            ) : (
+              history.map((item, i) => (
+                <Text key={i} style={styles.historyText}>
+                  {item}
+                </Text>
+              ))
+            )}
+          </ScrollView>
+        </View>
       )}
 
       {/* Display */}
       <View style={styles.displayContainer}>
         <Text style={styles.displayText}>{input || "0"}</Text>
       </View>
-      {/* Scientific Buttons */}
-      <View style={styles.buttonsContainer}>
-        {sciButtons.map((row, i) => (
-          <View key={i} style={styles.row}>
-            {row.map((btn) => (
-              <TouchableOpacity
-                key={btn}
-                style={[styles.button, styles.sciButton]}
-                onPress={() =>
-                  btn === "√(" ? handlePress("sqrt(") : handlePress(btn)
-                }
-              >
-                <Text style={[styles.buttonText, styles.sciText]}>{btn}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        ))}
-      </View>
 
-      {/* Buttons */}
+      {/* Calculator Body */}
       <View style={styles.buttonsContainer}>
-        {buttons.map((row, i) => (
+        {(showSci ? sciButtons : buttons).map((row, i) => (
           <View key={i} style={styles.row}>
             {row.map((btn) => (
               <TouchableOpacity
                 key={btn}
                 style={[
                   styles.button,
-                  btn === "C" ? styles.clearButton : null,
-                  btn === "=" ? styles.equalsButton : null,
+                  btn === "C" && styles.clearButton,
+                  btn === "=" && styles.equalsButton,
+                  showSci &&
+                    ["sin(", "cos(", "tan(", "log(", "ln(", "√(", "^", "π", "e"].includes(btn) &&
+                    styles.sciButton,
                 ]}
                 onPress={() =>
                   btn === "⌫" ? setInput(input.slice(0, -1)) : handlePress(btn)
@@ -107,6 +122,9 @@ export default function Calculator(){
                   style={[
                     styles.buttonText,
                     (btn === "=" || btn === "C") && styles.specialText,
+                    showSci &&
+                      ["sin(", "cos(", "tan(", "log(", "ln(", "√(", "^", "π", "e"].includes(btn) &&
+                      styles.sciText,
                   ]}
                 >
                   {btn}
@@ -120,86 +138,86 @@ export default function Calculator(){
   );
 }
 
-
-
 const styles = StyleSheet.create({
-  historyContainer: {
-    maxHeight: 100,
-    marginBottom: 10,
-    paddingHorizontal: 5,
+  container: {
+    flex: 1,
+    backgroundColor: "#121212",
+    padding: 15,
+    justifyContent: "flex-end",
   },
 
-  historyText: {
-    color: "#aaa",
-    fontSize: 16,
-    textAlign: "right",
+  topRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 10,
   },
 
   historyButton: {
-    backgroundColor: "#444",
+    backgroundColor: "#2a2a2a",
     padding: 10,
     borderRadius: 10,
-    marginBottom: 10,
-    alignSelf: "center",
   },
-
   historyButtonText: {
-    color: "#fff",
+    color: "#FFD700",
     fontSize: 16,
     fontWeight: "600",
   },
 
-  container: {
-    flex: 1,
-    backgroundColor: "#1e1e1e",
-    padding: 20,
-    justifyContent: "flex-end",
+  iconButton: {
+    backgroundColor: "#2a2a2a",
+    padding: 10,
+    borderRadius: 50,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  historyBox: {
+    backgroundColor: "#1f1f1f",
+    borderRadius: 12,
+    padding: 10,
+    maxHeight: 120,
+    marginBottom: 10,
+  },
+  historyText: {
+    color: "#bbb",
+    fontSize: 15,
+    textAlign: "right",
   },
 
   displayContainer: {
-    backgroundColor: "#000",
-    padding: 20,
+    backgroundColor: "#1e1e1e",
+    padding: 25,
     borderRadius: 15,
     marginBottom: 20,
-    shadowColor: "#000",
-    shadowOpacity: 0.5,
-    shadowRadius: 8,
-    elevation: 8,
+    elevation: 6,
   },
-
   displayText: {
-    fontSize: 45,
+    fontSize: 48,
     fontWeight: "bold",
-    color: "#0f0",
+    color: "#00ff88",
     textAlign: "right",
   },
 
   buttonsContainer: {
-    flexDirection: "column",
+    marginTop: 10,
   },
-
   row: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 15,
+    marginBottom: 12,
   },
-
   button: {
     flex: 1,
-    backgroundColor: "#333",
+    backgroundColor: "#2d2d2d",
     paddingVertical: 20,
     marginHorizontal: 5,
     borderRadius: 15,
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#000",
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-    elevation: 4,
+    elevation: 3,
   },
-
   buttonText: {
-    fontSize: 24,
+    fontSize: 22,
     color: "#fff",
     fontWeight: "600",
   },
@@ -207,11 +225,9 @@ const styles = StyleSheet.create({
   equalsButton: {
     backgroundColor: "#007AFF",
   },
-
   clearButton: {
     backgroundColor: "#ff3b30",
   },
-
   specialText: {
     color: "#fff",
     fontWeight: "bold",
@@ -219,10 +235,9 @@ const styles = StyleSheet.create({
 
   sciText: {
     color: "#FFD700",
-    fontSize: 20,
+    fontSize: 18,
   },
-
   sciButton: {
-    backgroundColor: "#555",
+    backgroundColor: "#333",
   },
 });
