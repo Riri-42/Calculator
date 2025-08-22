@@ -31,10 +31,7 @@ export default function Calculator() {
     }
   };
 
-  const sciButtons = [
-    ["sin(", "cos(", "tan(", "log("],
-    ["ln(", "√(", "^", "%"],
-    ["π", "e", "(", ")"],
+  const buttons = [
     ["C", "/", "*", "⌫"],
     ["7", "8", "9", "-"],
     ["4", "5", "6", "+"],
@@ -42,12 +39,11 @@ export default function Calculator() {
     ["0", ".", "%"],
   ];
 
-  const buttons = [
-    ["C", "/", "*", "⌫"],
-    ["7", "8", "9", "-"],
-    ["4", "5", "6", "+"],
-    ["1", "2", "3", "="],
-    ["0", ".", "%"],
+    const sciButtons = [
+    ["sin(", "cos(", "tan(", "log("],
+    ["ln(", "√(", "^", "%"],
+    ["π", "e", "(", ")"],
+    ...buttons,
   ];
 
   return (
@@ -134,6 +130,7 @@ export default function Calculator() {
           </View>
         ))}
       </View>
+
     </View>
   );
 }
